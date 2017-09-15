@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+	<script src="indexController.js"></script>
+
+	<script src="Canvas/canvas.js"></script>
+	<title>Slikar-Prototip</title>
+</head>
+
+<body background="/Resources/background.jpg" Style="background-size:cover;">
+
+
+
+  <div id="logInDiv"
+  style= "width:500px; height500px; background-color:rgba(245,245,225,0.35);
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	margin: -250px 0 0 -250px;"
+  class="panel panel-default">
+
+  <h2 style="margin-left:15px; text-shadow: 2px 2px black; color:white">
+		Za pričetek igre izberi ime:
+  </h2>
+  <form class="form-horizontal" action="javascript:logIn();">
+	<div class="form-group">
+    <label class="control-label col-sm-2" for="nameInput" style="text-shadow: 2px 2px black; color:white">
+			Ime:
+	  </label>
+    <div class="col-sm-9">
+    	<input type="text"
+			pattern="^[a-zA-Z0-9_-]*$"
+			class="form-control"
+			id="nameInput"
+			placeholder="Izberi ime"
+			name="nameInput"
+			title="Črke, Številke ter '_' in '-'"
+			required>
+      </div>
+  </div>
+  <div class="form-group">
+    <div class="col-sm-offset-2 col-sm-10">
+      <button type="submit" class="btn btn-default">Prijava</button>
+    </div>
+  </div>
+  </form>
+  </div>
+
+</body>
+</html>
