@@ -3,4 +3,4 @@ session_start();
 $_SESSION["name"]=$_GET["name"];
 echo $_SESSION["name"];
 ?>
-//Comment
+//Commentt
