@@ -1,22 +1,28 @@
 var scnX;
 var scnY;
-var bool=false;
+var isDrawingShape=false;
 var mousedown=false;
+var socket = null;
 
-function canvas_loadCanvas(){
+function canvas_canvasLoad(webSocketInstance){
+	socket = webSocketInstance;
 	var canv=document.getElementById("canv");
-	//canv.width=500;
-	//canv.height=500;
+	canv.width = 600;
+	canv.height = 600;
+	canv.style.width = "600px";
+	canv.style.height = "600px";
 	//Basic set-up for drawing
-	canv.onmousedown=function(m){mousedown=true; scnX=m.clientX -200; scnY=m.clientY -10}
-	//We also save the initial coordinates, if we will need them for shapes.
+	//We also save the initial coordinates
+	canv.onmousedown=function(m){mousedown=true; scnX=m.clientX -$("#canv").offset().left; scnY=m.clientY -$("#canv").offset().top}
 	canv.onmousemove=draw;
-	canv.onmouseup=function(m){mousedown=false; bool=true;}
-	//We also call draw and we set bool to true, so we can draw the shapes(we need the bool, so we don't always draw shapes, if we have them selected)
-	$("#clearButton").click(clearCanvas);
+	canv.onmouseup=function(m){mousedown=false; isDrawingShape=true;}
+	$("#clearButton").click(canvas_clearCanvas);
+	canvas_brushDeselected();
 }
 
 function draw(m){
+	//Sets up basic data for the drawing function
+	if(mousedown || isDrawingShape){
 	//Getting the desired shape
 	var radios = document.getElementsByName('drawing');
 	for (var i = 0, length = radios.length; i < length; i++) {
@@ -27,10 +33,8 @@ function draw(m){
 			}
 		}
 		//Getting the position of the cursor and accounting for the position of the canvas
-		debugger;
 		var x=m.clientX -$("#canv").offset().left;
 		var y=m.clientY -$("#canv").offset().top;
-		debugger;
 		var fat=document.getElementById("size").value;
 		//Defining the canvas
 		var canv=document.getElementById("canv");
@@ -38,6 +42,7 @@ function draw(m){
 		//Getting the colors
 		ctx.fillStyle=document.getElementById("color_fill").value;
 		ctx.strokeStyle=document.getElementById("color_stroke").value;
+	}
 	//If we called the function while the mouse is held down(only used for drawing with the brush)
 	if(mousedown){
 		//Basic brush
@@ -74,21 +79,17 @@ function draw(m){
 				ctx.arc(x,y, big,0,2*Math.PI);
 			}
 		//Drawing
-		ctx.lineWidth = fat;
-		ctx.fill();
-		ctx.stroke();
+		canvas_finishDrawing(ctx, fat);
 		}
 	}
 	//We called the function by letting go of the mouse(Used for shapes)
-	else if(bool){
+	else if(isDrawingShape){
 		//Circle
 		if(drawing=="circle"){
 			ctx.beginPath();
 			var lengthOF=Math.sqrt(Math.pow((scnX-x),2)+Math.pow((scnY-y),2));
 			ctx.arc((scnX+x)/2,(scnY+y)/2,lengthOF/2,0,2*Math.PI);
-			ctx.lineWidth = fat;
-			ctx.stroke();
-			ctx.fill();
+			canvas_finishDrawing(ctx, fat);
 		}
 		//Rectangle
 		else if(drawing=="rectangle"){
@@ -96,9 +97,7 @@ function draw(m){
 			var lengthOFX=(x-scnX);
 			var lengthOFY=(y-scnY);
 			ctx.rect(scnX,scnY,lengthOFX, lengthOFY);
-			ctx.lineWidth = fat;
-			ctx.stroke();
-			ctx.fill();
+			canvas_finishDrawing(ctx, fat);
 		}
 		//Square
 		else if(drawing=="square"){
@@ -109,9 +108,7 @@ function draw(m){
 				ctx.rect(scnX,scnY,lengthOF, lengthOF);
 			else
 				ctx.rect(scnX,scnY,lengthOF, -lengthOF);
-			ctx.lineWidth = fat;
-			ctx.stroke();
-			ctx.fill();
+			canvas_finishDrawing(ctx, fat);
 		}
 		//Line
 		else if(drawing=="line"){
@@ -120,25 +117,26 @@ function draw(m){
 			var lengthOFY=(y-scnY);
 			ctx.moveTo(scnX,scnY);
 			ctx.lineTo(x, y);
-			ctx.lineWidth = fat;
-			ctx.stroke();
-			ctx.fill();
+			canvas_finishDrawing(ctx, fat);
 		}
-	bool=false;
+		isDrawingShape = false;
 	}
 }
 
-function specialBR(){
+function canvas_brushSelected(){
 	$("#Extra").show();
 	}
-
-function special(){
+function canvas_brushDeselected(){
 	$("#Extra").hide();
 	}
-
-function clearCanvas(){
+function canvas_clearCanvas(){
 	var canv=document.getElementById("canv");
 	var ctx=canv.getContext("2d");
 	ctx.clearRect(0, 0, canv.width, canv.height);
 	ctx.beginPath();
+}
+function canvas_finishDrawing(ctx, brushWidth){
+	ctx.lineWidth = brushWidth;
+	ctx.stroke();
+	ctx.fill();
 }

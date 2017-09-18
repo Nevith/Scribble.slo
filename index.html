@@ -11,22 +11,16 @@
 
 	<script src="ScribbleGame/Canvas/canvasController.js"></script>
 	<script src="ScribbleGame/Chat/guessChatController.js"></script>
+	<script src="ScribbleGame/Lobby/lobyController.js"></script>
 	<title>Slikar-Prototip</title>
-
-	<style>
-	.glassyBox{
-		background-color: rgba(245,245,225,0.35);
-		text-shadow: 2px 2px black;
-		color:white
-	}
-	</style>
 </head>
 
 <body background="/Resources/background.jpg" Style="background-size:cover;">
-	<div class = "row" style="margin-top:50px">
-		<div id=chatContainer <div class="col-md-5"></div>
-		<div id=canvasContainer <div class="col-md-7">></div>
+	<div class="row" style="margin-top:50px">
+		<div id=chatContainer <div class="col-md-4"></div>
+		<div id=canvasContainer <div class="col-md-8">></div>
 	</div>
+	<div id="lobbyContainer"></div>
 
   <div id="logInDiv"
 	class="panel panel-default"
@@ -35,7 +29,6 @@
 	top: 50%;
 	left: 50%;
 	margin: -250px 0 0 -250px;">
-
   <h2 style="margin-left:15px; text-shadow: 2px 2px black; color:white">
 		Za pričetek igre izberi ime:
   </h2>
@@ -62,6 +55,5 @@
   </div>
   </form>
   </div>
-
 </body>
 </html>
