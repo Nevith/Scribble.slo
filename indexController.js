@@ -1,12 +1,12 @@
+var socket = null
+
 function logIn(){
-	$.ajax({
-		url: "PHP/login/login.php",
-		method: "GET",
-		data: { name:$("#nameInput").val()}
-	}).done(function(msg){
 		$("#logInDiv").hide();
-		$(document.body).load("Canvas/canvas.html", function(){
-			loadCanvas()
+		socket = io.connect();
+		$("#canvasContainer").load("ScribbleGame/Canvas/canvas.html", function(){
+			canvas_loadCanvas();
 		});
-	});
+		$("#chatContainer").load("ScribbleGame/Chat/guessChat.html", function(){
+			chat_guessChatLoad(socket);
+		});
 }

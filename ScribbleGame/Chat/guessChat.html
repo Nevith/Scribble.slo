@@ -1,0 +1,35 @@
+    <style>
+      #chat{
+        height: 460px;
+        scroll-behavior: smooth;
+        overflow: auto;
+      }
+      #userGuess, #playersContainer, #chat{
+        background-color: rgba(245,245,225,0.35);
+        text-shadow: 2px 2px black;
+        color:white
+      }
+    </style>
+
+
+    <div id="guessChatDefaultLayout">
+      <div class="row">
+        <div class="col-md-4">
+          <div class="well" id="playersContainer">
+            <h3>Players</h3>
+            <ol class="list-group" id="players"></ol>
+          </div>
+        </div>
+        <div class="col-md-8">
+          <div class="chat well" id="chat"></div>
+          <form id="guessForm">
+            <div class="form-group">
+              <label>Guess</label>
+              <input type="text" class="form-control" id="userGuess"></input>
+              <br>
+              <input type="submit" class="btn btn-primary" value="Guess"/>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>

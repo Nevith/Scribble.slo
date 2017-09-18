@@ -1,0 +1,15 @@
+{
+  "name": "game_server",
+  "version": "1.0.0",
+  "description": "single instance game server",
+  "main": "gameServer.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Andraz",
+  "license": "ISC",
+  "dependencies":{
+	"socket.io":"*",
+	"express":"*"
+  }
+}

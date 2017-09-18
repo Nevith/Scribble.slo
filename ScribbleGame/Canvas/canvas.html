@@ -1,0 +1,85 @@
+<style>
+ #canv{
+	background-color:Snow   ;
+	border: 1px solid grey;
+	padding: 0px;
+	border-radius: 5px;
+
+  width:100%;
+  height: 600px;
+	}
+
+ #options{
+  height: 600px;
+	min-width:150px;
+	padding: 0px;
+
+	background-color: rgba(245,245,225,0.35);
+	text-shadow: 2px 2px black;
+	color:white
+	}
+
+ #color_div{
+	height:100px;
+	border-bottom:2px solid grey;
+	}
+
+ .color{
+	background-color: rgba(245,245,225,0.0);
+	border: none;
+	margin-top: 15px;
+	margin-right: -5px;
+	}
+
+ #choose{
+	border-bottom:2px solid grey;
+	padding: 5px;
+	}
+
+ #options_advanced,  #Extra{
+	border-bottom:2px solid grey;
+	padding:5px;
+	}
+
+ .input{
+	color: black;
+	width: 50%;
+	margin:auto;
+	}
+</style>
+<div id="canvasDefaultLayout" class="row">
+  <div class="col-md-8">
+	   <canvas id="canv"></canvas>
+  </div>
+  <div class="col-md-4">
+	<div id="options" class="panel panel-default">
+		<div id="color_div">
+			<input type="color"   id="color_fill" class="color"> Fill color
+			<br>
+			<input type="color" id="color_stroke" class="color"> Stroke color
+		</div>
+		<div id="choose">
+			Drawing Tool:<br>
+			<input type="radio"  name="drawing" value="brush" onclick="specialBR()"> Brush <br>
+			<input type="radio"  name="drawing" value="rectangle" onclick="special()"> Rectangle <br>
+			<input type="radio"  name="drawing" value="square" onclick="special()"> Square <br>
+			<input type="radio" name="drawing" value="circle" onclick="special()"> Circle <br>
+			<input type="radio" name="drawing" value="line" onclick="special()" checked> Line <br>
+		</div>
+		<div id="options_advanced">
+		Stroke size:
+		<input type="number" min="1" max="50" id="size" class="input" value="1"><br>
+		<button id="clearButton" style="margin-top:5px" class="btn btn-primary">Clear</button>
+		</div>
+		<div id="Extra" visible="false">
+			Brush shape:<br>
+			<input type="radio" name="brush" value="norm" checked> Normal <br>
+			<input type="radio" name="brush" value="rec"> Rectangle <br>
+			<input type="radio" name="brush" value="sqr"> Square <br>
+			<input type="radio" name="brush" value="cir"> Circle <br>
+			Brush Size: <br>
+			<input type="number" min="1" max="50" id="size2" class="input" value="1">
+		</div>
+	</div>
+  </div>
+</div>
