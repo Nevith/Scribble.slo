@@ -13,6 +13,16 @@ function logIn(){
 				socket.emit("newUserLoaded", function(isUserAdmin, isGameRuning){
 					if(isGameRuning){
 						gameStart()
+						socket.emit("giveMeClue", function(data){
+							$("#wordContainer").html("");
+							for(var i=0; i< data.lng; i++){
+								if(i == data.space)
+									$("#wordContainer").append("[--]");
+								else
+									$("#wordContainer").append(" _ ");
+							}
+
+						});
 					}
 					else{
 					if(isUserAdmin){
@@ -75,7 +85,7 @@ function wordChosen(){
 	$("#WordPicker").hide();
 	$("#WordPicker").html("");
 	$("#wordContainer").html("");
-	$("#wordContainer").append(pickedWord);
+	$("#wordContainer").append(pickedWord.toUpperCase());
 	socket.emit("wordPicked", pickedWord);
 }
 
@@ -105,7 +115,7 @@ function gameStart(){
 							var appendingHTML = '<input type="radio"  name="wordPick" value="'+data[i]+'"> '+data[i].toUpperCase()+' <br>'
 							$("#WordPicker").append(appendingHTML);
 						}
-						$("#WordPicker").append("<button onclick='wordChosen()' class='btn btn-primary'>Izberi</button>")
+						$("#WordPicker").append("<br><button onclick='wordChosen()' class='btn btn-primary'>Izberi</button>")
 					})
 				});
 			}

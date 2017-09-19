@@ -132,9 +132,11 @@ function draw(m){
 }
 
 function canvas_brushSelected(){
+	socket.emit("updateCanvasPicture", document.getElementById("canv").toDataURL());
 	$("#Extra").show();
 	}
 function canvas_brushDeselected(){
+	socket.emit("updateCanvasPicture", document.getElementById("canv").toDataURL());
 	$("#Extra").hide();
 	}
 function canvas_clearCanvas(){
@@ -142,6 +144,7 @@ function canvas_clearCanvas(){
 	var ctx=canv.getContext("2d");
 	ctx.clearRect(0, 0, canv.width, canv.height);
 	ctx.beginPath();
+	socket.emit("updateCanvasPicture", document.getElementById("canv").toDataURL());
 }
 function canvas_finishDrawing(ctx, brushWidth, updateImg){
 	ctx.lineWidth = brushWidth;

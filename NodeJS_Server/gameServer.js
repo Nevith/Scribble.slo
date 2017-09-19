@@ -235,4 +235,9 @@ function setGameActions(socket){
     }
     callback(words);
   });
+
+  socket.on("giveMeClue", function(callback){
+    var space = word.indexOf(" ");
+    callback({lng: word.length, space: space});
+  })
 }
