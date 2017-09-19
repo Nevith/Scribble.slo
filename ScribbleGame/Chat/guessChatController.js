@@ -8,19 +8,47 @@ function chat_guessChatLoad(webSocketInstance){
 
   socket.on("updateUsers", function(data){
     var orderedListHTML = '';
+    var colorString = "";
     for(var i=0; i<data.length; i++){
-      orderedListHTML += "<li style='background-color: rgba(215,200,255, 0.3)' class='list-group-item'><strong>"+data[i]+"</strong></li>"
+      var username = data[i].username;
+      if(username.length > 6)
+        username = username.substring(0,5)+"...";
+      if(data[i].isDrawing)
+        colorString = "rgba(200,200,255, 0.50)";
+      else
+        colorString = "rgba(215,200,255, 0.15)";
+      orderedListHTML += "<li style='background-color:"+colorString+"' class='list-group-item'><strong>"+username+":  "+data[i].pointsScored+"</strong></li>"
     }
     $("#players").html(orderedListHTML);
   });
 
-
   guessForm.submit(function(e){
     e.preventDefault();
-    socket.emit("sendGuess", userGuess.val());
+    var newGuess = userGuess.val();
+    if(newGuess.length > 1){
+      socket.emit("sendGuess", newGuess, function(isClose, isTrue){
+          if(isClose){
+            $("#picturePlayerGuesses").append("<p style='color:white; font-size:120%'>"+newGuess+"</p>")
+            document.getElementById("picturePlayerGuesses").scrollTop = document.getElementById("picturePlayerGuesses").scrollHeight;
+          }
+          else if(isTrue){
+            $("#picturePlayerGuesses").append("<p style='color:blue; font-size:120%'>"+newGuess+"</p>")
+            document.getElementById("picturePlayerGuesses").scrollTop = document.getElementById("picturePlayerGuesses").scrollHeight;
+          }
+          else{
+            $("#picturePlayerGuesses").append("<p>"+newGuess+"</p>");
+            document.getElementById("picturePlayerGuesses").scrollTop = document.getElementById("picturePlayerGuesses").scrollHeight;
+          }
+      });
+    }
     userGuess.val("");
   });
+
   socket.on('newGuess', function(data){
-    chat.append("<p><strong style='font-size: 150%'>"+data.username+":  </strong>"+data.msg+"</p>");
+    var username = data.username;
+    if(username.length > 6)
+      username = username.substring(0,6);
+    chat.append("<p><strong style='font-size: 120%'>"+username+": </strong>"+data.msg+"</p>");
+    document.getElementById("chat").scrollTop = document.getElementById("chat").scrollHeight;
   });
 };

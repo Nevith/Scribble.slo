@@ -9,17 +9,23 @@
         text-shadow: 2px 2px black;
         color:white
       }
+      #tryLabel{
+        border: 1px solid white;
+        border-radius: 3px;
+        width:100%;
+        text-align: center;
+      }
     </style>
 
     <div id="guessChatDefaultLayout">
       <div class="row">
-        <div class="col-md-4">
+        <div class="col-md-6">
           <div class="well" id="playersContainer">
             <h3>Igralci</h3>
             <ol class="list-group" id="players"></ol>
           </div>
         </div>
-        <div class="col-md-8">
+        <div class="col-md-6">
           <div class="chat well" id="chat"></div>
           <form id="guessForm">
             <div class="form-group">

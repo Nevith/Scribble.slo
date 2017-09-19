@@ -4,6 +4,8 @@ var isDrawingShape=false;
 var mousedown=false;
 var socket = null;
 
+var brushDrawings = 0;
+
 function canvas_canvasLoad(webSocketInstance){
 	socket = webSocketInstance;
 	var canv=document.getElementById("canv");
@@ -18,6 +20,11 @@ function canvas_canvasLoad(webSocketInstance){
 	canv.onmouseup=function(m){mousedown=false; isDrawingShape=true;}
 	$("#clearButton").click(canvas_clearCanvas);
 	canvas_brushDeselected();
+	var updateCanvasTime = function(){
+		socket.emit("updateCanvasPicture", document.getElementById("canv").toDataURL())
+		setTimeout(updateCanvasTime, 5000);
+	};
+	//updateCanvasTime();
 }
 
 function draw(m){
@@ -79,7 +86,8 @@ function draw(m){
 				ctx.arc(x,y, big,0,2*Math.PI);
 			}
 		//Drawing
-		canvas_finishDrawing(ctx, fat);
+		brushDrawings++;
+		canvas_finishDrawing(ctx, fat, (brushDrawings%30 == 0));
 		}
 	}
 	//We called the function by letting go of the mouse(Used for shapes)
@@ -89,7 +97,7 @@ function draw(m){
 			ctx.beginPath();
 			var lengthOF=Math.sqrt(Math.pow((scnX-x),2)+Math.pow((scnY-y),2));
 			ctx.arc((scnX+x)/2,(scnY+y)/2,lengthOF/2,0,2*Math.PI);
-			canvas_finishDrawing(ctx, fat);
+			canvas_finishDrawing(ctx, fat, true);
 		}
 		//Rectangle
 		else if(drawing=="rectangle"){
@@ -97,7 +105,7 @@ function draw(m){
 			var lengthOFX=(x-scnX);
 			var lengthOFY=(y-scnY);
 			ctx.rect(scnX,scnY,lengthOFX, lengthOFY);
-			canvas_finishDrawing(ctx, fat);
+			canvas_finishDrawing(ctx, fat, true);
 		}
 		//Square
 		else if(drawing=="square"){
@@ -108,7 +116,7 @@ function draw(m){
 				ctx.rect(scnX,scnY,lengthOF, lengthOF);
 			else
 				ctx.rect(scnX,scnY,lengthOF, -lengthOF);
-			canvas_finishDrawing(ctx, fat);
+			canvas_finishDrawing(ctx, fat, true);
 		}
 		//Line
 		else if(drawing=="line"){
@@ -117,7 +125,7 @@ function draw(m){
 			var lengthOFY=(y-scnY);
 			ctx.moveTo(scnX,scnY);
 			ctx.lineTo(x, y);
-			canvas_finishDrawing(ctx, fat);
+			canvas_finishDrawing(ctx, fat, true);
 		}
 		isDrawingShape = false;
 	}
@@ -135,8 +143,10 @@ function canvas_clearCanvas(){
 	ctx.clearRect(0, 0, canv.width, canv.height);
 	ctx.beginPath();
 }
-function canvas_finishDrawing(ctx, brushWidth){
+function canvas_finishDrawing(ctx, brushWidth, updateImg){
 	ctx.lineWidth = brushWidth;
 	ctx.stroke();
 	ctx.fill();
+	if(updateImg)
+		socket.emit("updateCanvasPicture", document.getElementById("canv").toDataURL());
 }

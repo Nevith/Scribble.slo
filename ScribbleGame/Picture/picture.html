@@ -1,0 +1,44 @@
+<style>
+ #pictureCanvasImage{
+   height: 600px;
+   width: 600px;
+
+   border: 1px solid grey;
+ 	 padding: 0px;
+ 	 border-radius: 5px;
+ }
+ #picturePlayerGuessesContainer{
+  height: 600px;
+  min-width:150px;
+
+  background-color: rgba(245,245,225,0.35);
+  text-shadow: 1px 1px black;
+  color:white
+ }
+ #picturePlayerGuesses{
+   background-color: rgba(215,200,255, 0.15);
+   padding-left: 15px;
+   scroll-behavior: smooth;
+   height:88%;
+   overflow: auto;
+   text-shadow: 0px 0px;
+   color:black;
+   border-top: 1px solid white;
+   border-bottom: 1px solid white;
+ }
+</style>
+
+<div id="pictureDefaultLayout" class="row">
+  <div class="col-md-3">
+    <div id="picturePlayerGuessesContainer" class="panel panel-default">
+      <strong style="font-size:120%; padding-left: 15px;">Tvoji poskusi:</strong><br>
+      <strong style="padding-left: 15px;">Bela(blizu)</strong><br>
+      <strong style="padding-left: 15px;">Rdeča(zadetek)</strong><br>
+      <div id="picturePlayerGuesses"></div>
+    </div>
+  </div>
+
+  <div class="col-md-9" >
+    <img id="pictureCanvasImage" style="background-color:white;" src="Resources/default.jpg"></img>
+  </div>
+</div>
