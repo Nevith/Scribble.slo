@@ -28,15 +28,15 @@ function chat_guessChatLoad(webSocketInstance){
     if(newGuess.length > 1){
       socket.emit("sendGuess", newGuess, function(isClose, isTrue){
           if(isClose){
-            $("#picturePlayerGuesses").append("<p style='color:white; font-size:120%'>"+newGuess+"</p>")
+            $("#picturePlayerGuesses").append("<p style='color:white; font-size:120%'>"+newGuess.toUpperCase()+"</p>")
             document.getElementById("picturePlayerGuesses").scrollTop = document.getElementById("picturePlayerGuesses").scrollHeight;
           }
           else if(isTrue){
-            $("#picturePlayerGuesses").append("<p style='color:blue; font-size:120%'>"+newGuess+"</p>")
+            $("#picturePlayerGuesses").append("<p style='color:blue; font-size:120%'>"+newGuess.toUpperCase()+"</p>")
             document.getElementById("picturePlayerGuesses").scrollTop = document.getElementById("picturePlayerGuesses").scrollHeight;
           }
           else{
-            $("#picturePlayerGuesses").append("<p>"+newGuess+"</p>");
+            $("#picturePlayerGuesses").append("<p>"+newGuess.toUpperCase()+"</p>");
             document.getElementById("picturePlayerGuesses").scrollTop = document.getElementById("picturePlayerGuesses").scrollHeight;
           }
       });

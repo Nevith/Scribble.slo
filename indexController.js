@@ -21,7 +21,6 @@ function logIn(){
 								else
 									$("#wordContainer").append(" _ ");
 							}
-
 						});
 					}
 					else{
@@ -69,6 +68,25 @@ function logIn(){
 					$("#endScreenDiv").append("<p>"+i+". "+data[i].username+": "+data[i].pointsScored+"</p>")
 				}
 			});
+		})
+		socket.on("theWordWas", function(data){
+			if(!isDrawingCur){
+				$("#wordContainer").html(data.toUpperCase());
+			}
+		});
+		socket.on("givingExtraClue", function(data){
+			console.log(data);
+			if(!isDrawingCur){
+				$("#wordContainer").html("");
+				for(var i=0; i< data.lng; i++){
+					if(i == data.space)
+						$("#wordContainer").append("[--]");
+					else if(data.clueSpot.indexOf(i) != -1)
+						$("#wordContainer").append(" "+data.latters[data.clueSpot.indexOf(i)].toUpperCase()+" ");
+					else
+						$("#wordContainer").append(" _ ");
+				}
+			}
 		})
 }
 

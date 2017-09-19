@@ -11,9 +11,11 @@ var drawerIndex = 0;
 var currentRound = 1;
 var word = "testtesttest";
 var roundTime;
+var displayTime
 var roundTimeDisplayStamp = 0;
 var roundTimer;
 var displayTimer;
+var clueGiven = [];
 
 var pointsGiven;
 var numberOfHits;
@@ -39,7 +41,7 @@ var output = read(__dirname+"/../Resources/words.txt", function(data) {
     console.log(samostalniki);
 });
 
-server.listen(2030);
+server.listen(2020);
 console.log("Server runing...")
 
 app.get('/',function(request, response){
@@ -62,8 +64,8 @@ io.sockets.on('connection', function(socket){
     console.log('Disconnect: %s sockets connected', connections.length);
 
     if(connections.length < 1){
-      clearTimeout(roundTimer);
-      clearTimeout(displayTimer);
+      clearTimeout(roundTime);
+      clearTimeout(displayTime);
       gameIsRunning = false;
     }
   });
@@ -121,43 +123,17 @@ function setGameActions(socket){
     displayTimer = function(sockets){
       var secLeft = Math.round((roundTime._idleTimeout - (new Date() - roundTimeDisplayStamp))/1000)
       sockets.emit("displayTimer", secLeft+"s")
-      setTimeout(function(){if(gameIsRunning) displayTimer(sockets)}, 1000);
+      if(secLeft == 90 || secLeft == 40){
+        if(secLeft == 90)
+          clueGiven = [];
+        giveOutClue();
+      }
+      displayTime = setTimeout(function(){if(gameIsRunning) displayTimer(sockets)}, 1000);
     }
     //Reset round
     drawingTimer = function(sockets){
       roundTimeDisplayStamp = new Date();
-      roundTime = setTimeout(function(){
-        drawerIndex++;
-        if(drawerIndex >= connections.length){
-          if(currentRound>=numberOfRounds){
-            //Game Ends
-            clearTimeout(roundTimer);
-            clearTimeout(displayTimer);
-            gameIsRunning = false;
-            for(var i=0; i<connections.length; i++){
-              if(users[i] && connections[i]){
-                users[i].pointsScored = connections[i].pointsScored;
-              }
-            }
-            users.sort(function (a, b) { return b.pointsScored - a.pointsScored})
-            sockets.emit("gameEnded", users);
-          }
-          else{
-            wasDrawerIndexReset = true;
-            drawerIndex = 0;
-            currentRound++;
-          }
-        }
-        for(var i=0; i<connections.length; i++){
-          if(connections[i].isDrawing)
-            connections[i].pointsScored += pointsGiven*0.35*numberOfHits;
-            updateUsers();
-        }
-        numberOfHits = 0;
-        if(gameIsRunning)
-          drawingTimer(sockets);
-        sockets.emit("newRound");
-      }, 180000);
+      roundTime = setTimeout(endOfRound, 120000);
     }
     io.sockets.emit("gameStart");
   });
@@ -166,7 +142,7 @@ function setGameActions(socket){
     if(!socket.isDrawing && !socket.hasGuessedThisRound){
       if(data.toUpperCase() == word.toUpperCase()){
         if(numberOfHits>0)
-          socket.pointsScored += pointsGiven / (numberOfHits*0.75);
+          socket.pointsScored += Math.round(pointsGiven * (0.75/numberOfHits));
         else
           socket.pointsScored += pointsGiven
         numberOfHits++;
@@ -175,6 +151,9 @@ function setGameActions(socket){
         io.sockets.emit('newGuess', {msg: "Ugotovil sem!", username: socket.username, isDrawing: socket.isDrawing});
         io.sockets.emit('correctGuess', socket.username);
         updateUsers();
+        if(numberOfHits >= connections.length-1){
+          endOfRound();
+        }
       }
       else if(word.toUpperCase().indexOf(data.toUpperCase())>=0 && (data.length >= (word.length/2))){
         callback(true, false);
@@ -218,6 +197,8 @@ function setGameActions(socket){
     }
     var space = word.indexOf(" ");
     io.sockets.emit("WordClueLength", {lng: word.length, space: space});
+    clearTimeout(roundTime);
+    clearTimeout(displayTime);
     drawingTimer(io.sockets);
     displayTimer(io.sockets);
     })
@@ -240,4 +221,51 @@ function setGameActions(socket){
     var space = word.indexOf(" ");
     callback({lng: word.length, space: space});
   })
+
+var endOfRound = function(){
+    io.sockets.emit("theWordWas", word);
+    clearTimeout(roundTime);
+    clearTimeout(displayTime);
+    drawerIndex++;
+    if(drawerIndex >= connections.length){
+      if(currentRound>=numberOfRounds){
+        //Game Ends
+        clearTimeout(roundTime);
+        clearTimeout(displayTime);
+        gameIsRunning = false;
+        for(var i=0; i<connections.length; i++){
+          if(users[i] && connections[i]){
+            users[i].pointsScored = connections[i].pointsScored;
+          }
+        }
+        users.sort(function (a, b) { return b.pointsScored - a.pointsScored})
+        io.sockets.emit("gameEnded", users);
+      }
+      else{
+        wasDrawerIndexReset = true;
+        drawerIndex = 0;
+        currentRound++;
+      }
+    }
+    for(var i=0; i<connections.length; i++){
+      if(connections[i].isDrawing)
+        connections[i].pointsScored += Math.round(pointsGiven*0.35*numberOfHits);
+        updateUsers();
+    }
+    numberOfHits = 0;
+    io.sockets.emit("newRound");
+  }
+
+  var giveOutClue = function(){
+    var randomNumber = Math.floor((Math.random() * word.length-1));
+    var space = word.indexOf(" ");
+    while(clueGiven.indexOf(randomNumber)!= -1 || space == randomNumber)
+      randomNumber = Math.floor((Math.random() * word.length-1));
+    clueGiven.push(randomNumber);
+    var latters = [];
+    for(var i = 0; i< clueGiven.length; i++){
+      latters.push(word[clueGiven[i]]);
+    }
+    io.sockets.emit("givingExtraClue", {lng: word.length, space: space, clueSpot: clueGiven, latters:latters})
+  }
 }
