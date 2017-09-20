@@ -17,12 +17,13 @@ var roundTimer;
 var displayTimer;
 var clueGiven = [];
 var wordIsBeingPicked = false;
+var connectionCounter = 1;
 
 var endOfRound = null;
 var pointsGiven;
 var numberOfHits;
-users=[];
-connections=[];
+var users=[];
+var connections=[];
 var samostalniki = "";
 
 function read(file, callback) {
@@ -36,10 +37,13 @@ function read(file, callback) {
 var output = read(__dirname+"/../Resources/words.txt", function(data) {
     samostalniki=data;
     samostalniki = samostalniki.split("\r");
-    for(var i=0; i<samostalniki.length; i++)
+    for(var i=0; i<samostalniki.length; i++){
       samostalniki[i] = samostalniki[i].substring(1, samostalniki[i].length);
+      if(samostalniki[i].length<=2)
+        samostalniki.splice(i,1);
+    }
 });
-var port = 2030;
+var port = 2020;
 server.listen(port);
 console.log("Server runing... on port "+port);
 
@@ -55,7 +59,11 @@ io.sockets.on('connection', function(socket){
   //Disconnect
   socket.on('disconnect', function(data){
     if(socket.username) {
-      users.splice(users.indexOf(socket.username), 1)
+      var spliceIndex = 0;
+      for (var i=0; i<connections.length; i++)
+        if(users[i].countID==connections[i].countID)
+          spliceIndex = i;
+      users.splice(spliceIndex, 1)
       updateUsers();
     }
 
@@ -66,6 +74,7 @@ io.sockets.on('connection', function(socket){
       clearTimeout(roundTime);
       clearTimeout(displayTime);
       gameIsRunning = false;
+      wordIsBeingPicked = false;
     }
     else if(socket.isDrawing){
       endOfRound();
@@ -78,7 +87,8 @@ io.sockets.on('connection', function(socket){
       socket.username = data;
       socket.pointsScored = 0;
       socket.isDrawing = false;
-      var newUser = {username: socket.username, pointsScored: 0}
+      socket.countID = connectionCounter++;
+      var newUser = {username: socket.username, pointsScored: 0, countID:socket.countID}
       users.push(newUser);
       if(users.indexOf(newUser) == 0){
         socket.hasAdminPrivilage = true;
@@ -103,6 +113,9 @@ io.sockets.on('connection', function(socket){
   })
   setGameActions(socket);
 });
+for(var i=0; i<connections.length; i++)
+  if(!connections[i].countID || !connections[i].username)
+    connections[i].disconnect();
 
 function updateUsers(){
   for(var i=0; i<connections.length; i++){
@@ -125,7 +138,7 @@ function setGameActions(socket){
     displayTimer = function(sockets){
       var secLeft = Math.round((roundTime._idleTimeout - (new Date() - roundTimeDisplayStamp))/1000)
       sockets.emit("displayTimer", secLeft+"s")
-      if(secLeft == 90 || secLeft == 40){
+      if((secLeft == 90 && word.length > 3) || secLeft == 40){
         if(secLeft == 90)
           clueGiven = [];
         giveOutClue();
@@ -237,6 +250,7 @@ endOfRound = function(){
         clearTimeout(roundTime);
         clearTimeout(displayTime);
         gameIsRunning = false;
+        wordIsBeingPicked = false;
         for(var i=0; i<connections.length; i++){
           if(users[i] && connections[i]){
             users[i].pointsScored = connections[i].pointsScored;
@@ -253,7 +267,12 @@ endOfRound = function(){
     }
     for(var i=0; i<connections.length; i++){
       if(connections[i].isDrawing)
-        connections[i].pointsScored += Math.round(pointsGiven*0.35*numberOfHits);
+      if(connections.length > 3){
+        connections[i].pointsScored += Math.round(pointsGiven*0.38*numberOfHits);
+      }
+      else {
+        connections[i].pointsScored += Math.round(pointsGiven*0.50*numberOfHits);
+      }
         updateUsers();
     }
     numberOfHits = 0;

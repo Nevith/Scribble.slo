@@ -65,7 +65,7 @@ function logIn(){
 		socket.on("gameEnded", function(data){
 			$(document.body).load("ScribbleGame/EndScreen/endScreen.html", function(){
 				for(var i = 0; i<data.length; i++){
-					$("#endScreenDiv").append("<p>"+i+". "+data[i].username+": "+data[i].pointsScored+"</p>")
+					$("#endScreenDiv").append("<p>"+(i-(-1))+". "+data[i].username+": "+data[i].pointsScored+"</p>")
 				}
 			});
 		})

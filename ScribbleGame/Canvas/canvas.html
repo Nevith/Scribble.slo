@@ -4,7 +4,7 @@
 	border: 1px solid grey;
 	padding: 0px;
 	border-radius: 5px;
-
+  margin-left: 15px;
 	}
 
  #options{
@@ -46,7 +46,8 @@
 	}
 </style>
 <div id="canvasDefaultLayout" class="row">
-  <div class="col-md-3">
+  <canvas id="canv" class="col-md-1"></canvas>
+  <div class="col-md-1" style="max-width:250px;">
 	<div id="options" class="panel panel-default">
 		<div id="color_div">
 			<input type="color"   id="color_fill" class="color"> Fill color
@@ -77,8 +78,5 @@
 			<input type="number" min="1" max="50" id="size2" class="input" value="1">
 		</div>
 	</div>
-  </div>
-  <div class="col-md-9">
-     <canvas id="canv"></canvas>
   </div>
 </div>

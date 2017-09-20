@@ -17,7 +17,8 @@ function chat_guessChatLoad(webSocketInstance){
         colorString = "rgba(200,200,255, 0.50)";
       else
         colorString = "rgba(215,200,255, 0.15)";
-      orderedListHTML += "<li style='background-color:"+colorString+"' class='list-group-item'><strong>"+username+":  "+data[i].pointsScored+"</strong></li>"
+      var hash = "[#" + data[i].countID + "]"
+      orderedListHTML += "<li style='background-color:"+colorString+"' class='list-group-item'><strong>"+username+"</strong><small>"+hash+"</small>:  <strong>"+data[i].pointsScored+"</strong></li>"
     }
     $("#players").html(orderedListHTML);
   });
