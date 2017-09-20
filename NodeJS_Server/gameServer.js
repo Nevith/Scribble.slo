@@ -16,7 +16,9 @@ var roundTimeDisplayStamp = 0;
 var roundTimer;
 var displayTimer;
 var clueGiven = [];
+var wordIsBeingPicked = false;
 
+var endOfRound = null;
 var pointsGiven;
 var numberOfHits;
 users=[];
@@ -32,17 +34,14 @@ function read(file, callback) {
     });
 }
 var output = read(__dirname+"/../Resources/words.txt", function(data) {
-    console.log(data);
     samostalniki=data;
     samostalniki = samostalniki.split("\r");
     for(var i=0; i<samostalniki.length; i++)
       samostalniki[i] = samostalniki[i].substring(1, samostalniki[i].length);
-    console.log("---------------------------------");
-    console.log(samostalniki);
 });
-
-server.listen(2020);
-console.log("Server runing...")
+var port = 2030;
+server.listen(port);
+console.log("Server runing... on port "+port);
 
 app.get('/',function(request, response){
   response.sendFile(path.resolve(__dirname+'/../index.html'))
@@ -67,6 +66,9 @@ io.sockets.on('connection', function(socket){
       clearTimeout(roundTime);
       clearTimeout(displayTime);
       gameIsRunning = false;
+    }
+    else if(socket.isDrawing){
+      endOfRound();
     }
   });
   //New user
@@ -139,12 +141,12 @@ function setGameActions(socket){
   });
   //sendGuess
   socket.on('sendGuess', function(data, callback){
-    if(!socket.isDrawing && !socket.hasGuessedThisRound){
+    if(!socket.isDrawing && !socket.hasGuessedThisRound && !wordIsBeingPicked){
       if(data.toUpperCase() == word.toUpperCase()){
         if(numberOfHits>0)
           socket.pointsScored += Math.round(pointsGiven * (0.75/numberOfHits));
         else
-          socket.pointsScored += pointsGiven
+          socket.pointsScored += Math.round(pointsGiven);
         numberOfHits++;
         socket.hasGuessedThisRound = true;
         callback(false, true);
@@ -155,7 +157,7 @@ function setGameActions(socket){
           endOfRound();
         }
       }
-      else if(word.toUpperCase().indexOf(data.toUpperCase())>=0 && (data.length >= (word.length/2))){
+      else if((word.toUpperCase().indexOf(data.toUpperCase())>=0 && (data.length >= (word.length/2)))|| data.toUpperCase().indexOf(word.toUpperCase())>=0){
         callback(true, false);
         io.sockets.emit('newGuess', {msg: data, username: socket.username, isDrawing: socket.isDrawing});
       }
@@ -180,8 +182,7 @@ function setGameActions(socket){
       socket.isDrawing = false;
       callback(false, roundInformation);
     }
-    if(connections.indexOf(socket)==connections.length-1)
-      updateUsers();
+    updateUsers();
   });
   //Update nonDrawing players' pictures
   socket.on("updateCanvasPicture", function(data){
@@ -191,11 +192,12 @@ function setGameActions(socket){
   socket.on("wordPicked", function(data){
     word = data;
     if(word.length-3 >= 0)
-      pointsGiven = 500 + (200*(word.length-3))
+      pointsGiven = Math.round(500 + (200*(word.length-3)));
     else {
       pointsGiven = 500;
     }
     var space = word.indexOf(" ");
+    wordIsBeingPicked = false;
     io.sockets.emit("WordClueLength", {lng: word.length, space: space});
     clearTimeout(roundTime);
     clearTimeout(displayTime);
@@ -204,6 +206,8 @@ function setGameActions(socket){
     })
 
   socket.on("getWordChoices", function(callback){
+    if(wordIsBeingPicked){return};
+    wordIsBeingPicked = true;
     var chosenIndexes = [];
     while(chosenIndexes.length < 10){
       var randomNumber = Math.floor((Math.random() * samostalniki.length-1));
@@ -222,7 +226,7 @@ function setGameActions(socket){
     callback({lng: word.length, space: space});
   })
 
-var endOfRound = function(){
+endOfRound = function(){
     io.sockets.emit("theWordWas", word);
     clearTimeout(roundTime);
     clearTimeout(displayTime);

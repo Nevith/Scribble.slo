@@ -75,7 +75,6 @@ function logIn(){
 			}
 		});
 		socket.on("givingExtraClue", function(data){
-			console.log(data);
 			if(!isDrawingCur){
 				$("#wordContainer").html("");
 				for(var i=0; i< data.lng; i++){
@@ -120,7 +119,7 @@ function gameStart(){
 	function newRound(){
 		socket.emit("getRoundData", function(isDrawing, roundInformation){
 			isDrawingCur = isDrawing;
-			$("#roundInformationContainer").html(roundInformation)
+			$("#roundInformationContainer").html("Runda: "+roundInformation)
 			if(isDrawing){
 				$("#canvasOrPictureContainer").load("ScribbleGame/Canvas/canvas.html", function(){
 					canvas_canvasLoad(socket);
