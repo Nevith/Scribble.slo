@@ -53,6 +53,7 @@ app.get('/',function(request, response){
 app.use(express.static(__dirname+"/../"));
 
 io.sockets.on('connection', function(socket){
+  console.log("New Connection");
   connections.push(socket);
   console.log('Connected: %s sockets connected', connections.length);
 
@@ -112,10 +113,8 @@ io.sockets.on('connection', function(socket){
     }
   })
   setGameActions(socket);
+  updateUsers();
 });
-for(var i=0; i<connections.length; i++)
-  if(!connections[i].countID || !connections[i].username)
-    connections[i].disconnect();
 
 function updateUsers(){
   for(var i=0; i<connections.length; i++){
@@ -270,13 +269,16 @@ endOfRound = function(){
       if(connections.length > 3){
         connections[i].pointsScored += Math.round(pointsGiven*0.38*numberOfHits);
       }
+      else if(connections.length == 2){
+        connections[i].pointsScored += Math.round(pointsGiven*numberOfHits);
+      }
       else {
         connections[i].pointsScored += Math.round(pointsGiven*0.50*numberOfHits);
       }
         updateUsers();
     }
     numberOfHits = 0;
-    io.sockets.emit("newRound");
+    setTimeout(function(){io.sockets.emit("newRound")}, 5000);
   }
 
   var giveOutClue = function(){
