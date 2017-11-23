@@ -4,6 +4,17 @@ var server = require('http').createServer(app);
 var io = require('socket.io').listen(server);
 var fs = require('fs');
 var path = require('path')
+var CryptoJS = require("crypto-js");
+
+/*
+// Encrypt
+var ciphertext = CryptoJS.AES.encrypt('my message', 'secret key 123');
+socket.emit("Crypto", ciphertext.toString());
+*/
+/*
+// Decrypt
+var bytes  = CryptoJS.AES.decrypt(ciphertext.toString(), 'secret key 123');
+*/
 
 var gameIsRunning = false; //Is true if game is runing
 var numberOfRounds = 0; //Number of rounds that will be played
@@ -24,6 +35,7 @@ var pointsGiven; //Points given depending on the word
 var numberOfHits; //Number of correct guesses for a turn
 var connections=[]; //An array of all connected sockets
 var samostalniki = ""; //All the words that can be chosen
+
 
 // Reads the file and uses callback function on the data gathered
 function read(file, callback) {
@@ -59,13 +71,17 @@ app.use(express.static(__dirname+"/../"));
 
 
 io.sockets.on('connection', function(socket){
+  for(var i=0; i < connections.length; i++){
+      if(!connections[i].username)
+          connections.splice(i, 1);
+  }
   console.log("New Connection");
   connections.push(socket);
   console.log('Connected: %s sockets connected', connections.length);
 
   //Disconnect
   socket.on('disconnect', function(data){
-    //Remove socker from the list
+    //Remove socket from the list
     connections.splice(connections.indexOf(socket), 1);
     console.log('Disconnect: %s sockets connected', connections.length);
 
@@ -91,9 +107,10 @@ io.sockets.on('connection', function(socket){
   //New user
   socket.on('newUser', function(data, callback){
     var usernameAvaliable = true;
-    for(var i=0; i < connections.length; i++)
+    for(var i=0; i < connections.length; i++){
         if(connections[i].username == data)
             usernameAvaliable = false;
+    }
 
     if(usernameAvaliable && connections.length < 10){
       if(connections.length == 1)
@@ -126,7 +143,6 @@ io.sockets.on('connection', function(socket){
 
   //Assign user connection all needed gameActions
   setGameActions(socket);
-  updateUsers();
 });
 
 

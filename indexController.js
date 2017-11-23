@@ -20,7 +20,7 @@ function logIn(){
 				socket.emit("newUserLoaded", function(isUserAdmin, isGameRuning){
 					//If game is runing update user to current status
 					if(isGameRuning){
-						gameStart()
+						gameStart();
 						//Get clues
 						socket.emit("giveMeClue", function(data){
 							$("#wordContainer").html("");
@@ -40,6 +40,7 @@ function logIn(){
 						$("#adminForm").hide();
 					}
 					}
+
 				});
 			});
 		}
