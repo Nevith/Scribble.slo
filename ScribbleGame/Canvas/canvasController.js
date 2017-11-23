@@ -6,19 +6,25 @@ var socket = null;
 var drawing = null;
 var colorLayer;
 
+
+//Initialize canvas basic funcionality
 function canvas_canvasLoad(webSocketInstance){
 	socket = webSocketInstance;
+
 	var canv=document.getElementById("canv");
 	canv.width = 600;
 	canv.height = 600;
 	canv.style.width = "600px";
 	canv.style.height = "600px";
+
 	//Basic set-up for drawing
 	//We also save the initial coordinates
 	canv.onmousedown=function(m){mousedown=true; scnX=m.clientX -$("#canv").offset().left; scnY=m.clientY -$("#canv").offset().top; /*paintBucketPaint(drawing=="paintBuckedTool");*/ socket.emit("updateCanvasPicture", document.getElementById("canv").toDataURL());}
 	canv.onmousemove=draw;
 	canv.onmouseup=function(m){mousedown=false; isDrawingShape=true; socket.emit("updateCanvasPicture", document.getElementById("canv").toDataURL());}
 	$("#clearButton").click(canvas_clearCanvas);
+
+	//Brush is not selected by default
 	canvas_brushDeselected();
 }
 
@@ -117,16 +123,20 @@ function draw(m){
 	}
 }
 
+//When player selects the brush
 function canvas_brushSelected(){
 	drawing = "brush"
-	console.log(drawing);
+	//Update current canvas picture
 	socket.emit("updateCanvasPicture", document.getElementById("canv").toDataURL());
+
 	$("#size").prop("disabled",true);
 	$("#color_fill").prop("disabled",true);
 	$("#color_fill").css("opacity","0.3");
 	$("#size").css("opacity","0.3");
 	$("#Extra").show();
-	}
+}
+
+//Player deselects the brush
 function canvas_brushDeselected(e){
 	//Getting the desired shape
 	var radios = document.getElementsByName('drawing');
@@ -136,11 +146,12 @@ function canvas_brushDeselected(e){
 			//Only one radio can be logically checked, we don't check the rest
 			break;
 			}
-		}
+	}
+	//Update current canvas picture
 	socket.emit("updateCanvasPicture", document.getElementById("canv").toDataURL());
+
 	$("#size").prop("disabled",false);
 	$("#size").css("opacity","1");
-	console.log(drawing);
 	if(drawing != "line"){
 		$("#color_fill").prop("disabled",false);
 		$("#color_fill").css("opacity","1");
@@ -150,7 +161,8 @@ function canvas_brushDeselected(e){
 		$("#color_fill").css("opacity","0.3");
 	}
 	$("#Extra").hide();
-	}
+}
+
 function canvas_clearCanvas(){
 	var canv=document.getElementById("canv");
 	var ctx=canv.getContext("2d");
@@ -158,14 +170,18 @@ function canvas_clearCanvas(){
 	ctx.beginPath();
 	socket.emit("updateCanvasPicture", document.getElementById("canv").toDataURL());
 }
-function canvas_finishDrawing(ctx, brushWidth, IfupdateCanvasPicture){
+
+//Adds the passed in canvas contex to the img and emits the data if desired
+function canvas_finishDrawing(ctx, brushWidth, UpdateCanvasPicture){
 	ctx.lineWidth = brushWidth;
 	ctx.stroke();
 	ctx.fill();
-	if(IfupdateCanvasPicture)
+	if(UpdateCanvasPicture)
 		socket.emit("updateCanvasPicture", document.getElementById("canv").toDataURL());
 }
-/*
+
+
+/* Trying to write an algorithm to have a paint bucket tool
 function paintBucketPaint(doWeFill){
 	console.log(doWeFill);
 	if(!doWeFill) {return};

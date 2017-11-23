@@ -13,7 +13,7 @@
 	<script src="ScribbleGame/Chat/guessChatController.js"></script>
 	<script src="ScribbleGame/Lobby/lobyController.js"></script>
 	<script src="ScribbleGame/Picture/pictureController.js"></script>
-	<title>Scribble.slo V-0.0.1</title>
+	<title>Scribble.slo V-1.0.0</title>
 </head>
 
 <body  Style="background:url(/Resources/background.jpg) no-repeat center center fixed; background-size:cover; -webkit-background-size: cover; -moz-background-size: cover; -o-background-size: cover; width:99%; margin:0px; padding:0px;">
@@ -28,23 +28,28 @@
 		</div>
 		<div id=canvasOrPictureContainer class="col-md-6 container"></div>
 	</div>
+
+
 	<div class="panel panel-default"
-	style="width:500px; background-color:rgba(0,0,0, 0.9);
-	text-shadow: 1px 1px black; color:white;
-	text-align:center;
-	scroll-behavior: smooth;
-	overflow: auto;
-	position: absolute;
-	top: 50%;
-	left: 50%;
-	margin: -250px 0 0 -250px;
-	padding-top: 25px;
-	padding-bottom: 25px;
-	display:none;
-	"
-	id="WordPicker">
+		style="width:500px; background-color:rgba(0,0,0, 0.9);
+		text-shadow: 1px 1px black; color:white;
+		text-align:center;
+		scroll-behavior: smooth;
+		overflow: auto;
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		margin: -250px 0 0 -250px;
+		padding-top: 25px;
+		padding-bottom: 25px;
+		display:none;
+		"
+		id="WordPicker">
 	</div>
+
+
 	<div id="lobbyContainer"></div>
+
 
   <div id="logInDiv"
 	class="panel panel-default"
@@ -53,31 +58,31 @@
 	top: 50%;
 	left: 50%;
 	margin: -250px 0 0 -250px;">
-  <h2 style="margin-left:15px; text-shadow: 2px 2px black; color:white">
-		Za pričetek igre izberi ime:
-  </h2>
-  <form class="form-horizontal" action="javascript:logIn();">
-	<div class="form-group">
-    <label class="control-label col-sm-2" for="nameInput" style="text-shadow: 2px 2px black; color:white">
-			Ime:
-	  </label>
-    <div class="col-sm-9">
-    	<input type="text"
-			pattern="^[a-žA-Ž0-9_-]*$"
-			class="form-control"
-			id="nameInput"
-			placeholder="Izberi ime"
-			name="nameInput"
-			title="Črke, Številke ter '_' in '-'"
-			required>
-    </div>
-  </div>
-  <div class="form-group">
-    <div class="col-sm-offset-2 col-sm-10">
-      <button type="submit" class="btn btn-primary">Prijava</button>
-    </div>
-  </div>
-  </form>
-  </div>
+  	<h2 style="margin-left:15px; text-shadow: 2px 2px black; color:white">
+			Za pričetek igre izberi ime:
+  	</h2>
+  	<form class="form-horizontal" action="javascript:logIn();">
+			<div class="form-group">
+				<label class="control-label col-sm-2" for="nameInput" style="text-shadow: 2px 2px black; color:white">
+						Ime:
+	  		</label>
+    		<div class="col-sm-9">
+    			<input type="text"
+						pattern="^[a-žA-Ž0-9_-]*$"
+						class="form-control"
+						id="nameInput"
+						placeholder="Izberi ime"
+						name="nameInput"
+						title="Črke, Številke ter '_' in '-'"
+						required>
+    		</div>
+  		</div>
+  		<div class="form-group">
+    		<div class="col-sm-offset-2 col-sm-10">
+      		<button type="submit" class="btn btn-primary">Prijava</button>
+    		</div>
+  		</div>
+  	</form>
+	</div>
 </body>
 </html>

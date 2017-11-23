@@ -3,16 +3,25 @@ var infoBoxTimeout = null;
 var isDrawingCur = false;
 
 function logIn(){
+	//Get palyer name
 	$("#yourNameContainer").html("Ime: "+ $("#nameInput").val());
+
+	//Connect to server
 	socket = io.connect();
+
+	//IF connected alert server of new user. Callback function tells server what to do if name is or isn't taken
 	socket.emit("newUser", $("#nameInput").val(), function(isNameNotTaken){
 		if(isNameNotTaken){
 			$("#logInDiv").hide();
+
 			$("#lobbyContainer").load("ScribbleGame/Lobby/lobby.html", function(){
 				lobby_lobbyLoad(socket);
+				//Tell the server new user had loaded
 				socket.emit("newUserLoaded", function(isUserAdmin, isGameRuning){
+					//If game is runing update user to current status
 					if(isGameRuning){
 						gameStart()
+						//Get clues
 						socket.emit("giveMeClue", function(data){
 							$("#wordContainer").html("");
 							for(var i=0; i< data.lng; i++){
@@ -34,16 +43,21 @@ function logIn(){
 				});
 			});
 		}
+		//Name already exists
 		else{
 			alert("Takšno ime že obstaja ali pa je igra polna");
 		}
 		});
+
+
 		$("#nameInput").val("");
 		socket.on("gameStart", gameStart);
 		socket.on("newRound", newRound);
 		socket.on("displayTimer", function(data){
 			$("#timerContainer").html("Preostali čas: "+data);
 		});
+
+
 		socket.on("correctGuess", function(data){
 			if(infoBoxTimeout)
 				clearTimeout(infoBoxTimeout);
@@ -51,6 +65,8 @@ function logIn(){
 			$("#infoBox").html(data + " je ugotovil besedo!");
 			infoBoxTimeout = setTimeout(function(){$("#infoBox").hide(); $("#infoBox").html(""); infoBoxTimeout = null;}, 3000);
 		})
+
+
 		socket.on("WordClueLength", function(data){
 			if(!isDrawingCur){
 				$("#wordContainer").html("");
@@ -62,6 +78,8 @@ function logIn(){
 				}
 			}
 		})
+
+
 		socket.on("gameEnded", function(data){
 			$(document.body).load("ScribbleGame/EndScreen/endScreen.html", function(){
 				for(var i = 0; i<data.length; i++){
@@ -69,11 +87,15 @@ function logIn(){
 				}
 			});
 		})
+
+
 		socket.on("theWordWas", function(data){
 			if(!isDrawingCur){
 				$("#wordContainer").html(data.toUpperCase());
 			}
 		});
+
+
 		socket.on("givingExtraClue", function(data){
 			if(!isDrawingCur){
 				$("#wordContainer").html("");
@@ -120,11 +142,14 @@ function gameStart(){
 		socket.emit("getRoundData", function(isDrawing, roundInformation){
 			isDrawingCur = isDrawing;
 			$("#roundInformationContainer").html("Runda: "+roundInformation)
+			//If tis this palyer's turn to draw
 			if(isDrawing){
 				$("#canvasOrPictureContainer").load("ScribbleGame/Canvas/canvas.html", function(){
 					canvas_canvasLoad(socket);
+					//Get player to pick word
 					var pickedWord = ""
 					$("#wordContainer").html("");
+					//Get word choices and fill them into a div
 					socket.emit("getWordChoices", function(data){
 						$("#WordPicker").show();
 						$("#WordPicker").html("");
@@ -136,6 +161,7 @@ function gameStart(){
 					})
 				});
 			}
+			//IF it not this player's turn to draw
 			else{
 				$("#canvasOrPictureContainer").load("ScribbleGame/Picture/picture.html", function(){
 					picture_pictureLoad(socket);
