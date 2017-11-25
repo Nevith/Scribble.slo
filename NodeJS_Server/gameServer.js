@@ -204,7 +204,7 @@ function setGameActions(socket){
       var secLeft = Math.round((roundTime._idleTimeout - (new Date() - roundTimeDisplayStamp))/1000)
       sockets.emit("displayTimer", secLeft+"s")
       if((secLeft == 90 && word.length > 3) || secLeft == 40){
-        if(secLeft == 90)
+        if(secLeft == 90 || (word.length <= 3 && secLeft == 40))
           clueGiven = [];
         giveOutClue();
       }
@@ -407,7 +407,7 @@ function setGameActions(socket){
         }
         users.sort(function (a, b) { return b.pointsScored - a.pointsScored});
         var encryptedUsers = CryptoJS.AES.encrypt(JSON.stringify(users),symCryptoPwd);
-        io.sockets.emit("gameEnded", encryptedUsers.toString());
+        setTimeout(function(){io.sockets.emit("gameEnded", encryptedUsers.toString());}, 5000);
       }
       else{
         //This was not the final round
