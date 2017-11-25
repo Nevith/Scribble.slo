@@ -36,6 +36,8 @@ var numberOfHits; //Number of correct guesses for a turn
 var connections=[]; //An array of all connected sockets
 var samostalniki = ""; //All the words that can be chosen
 
+var symCryptoPwd = "dghzuit50gf";
+
 
 // Reads the file and uses callback function on the data gathered
 function read(file, callback) {
@@ -82,6 +84,10 @@ io.sockets.on('connection', function(socket){
   //Disconnect
   socket.on('disconnect', function(data){
     //Remove socket from the list
+    if(socket.hasAdminPrivilage && !gameIsRunning && connections.length > 1){
+      connections[1].hasAdminPrivilage = true;
+      connections[1].emit("RecvAdminPrivilage");
+    }
     connections.splice(connections.indexOf(socket), 1);
     console.log('Disconnect: %s sockets connected', connections.length);
 
@@ -102,16 +108,33 @@ io.sockets.on('connection', function(socket){
       //End round
       endOfRound();
     }
+    else if(socket.hasGuessedThisRound){
+      //If disconected user guessed correctly this round we have to decrement numberOfHits before comparing
+      numberOfHits--;
+      //If all users guessed correctly end current Round
+      if(numberOfHits >= connections.length-1)
+        endOfRound();
+    }
+    else if(!socket.hasGuessedThisRound){
+      //If all users guessed correctly end current Round
+      if(numberOfHits >= connections.length-1)
+        endOfRound();
+    }
   });
 
   //New user
   socket.on('newUser', function(data, callback){
+    //Decrypt username
+    data = CryptoJS.AES.decrypt(data, symCryptoPwd).toString(CryptoJS.enc.Utf8);
+
+    //Check if user name is already taken
     var usernameAvaliable = true;
     for(var i=0; i < connections.length; i++){
         if(connections[i].username == data)
             usernameAvaliable = false;
     }
 
+    //If there is still room and user name is avaliable
     if(usernameAvaliable && connections.length < 10){
       if(connections.length == 1)
         socket.hasAdminPrivilage = true;
@@ -158,8 +181,9 @@ function updateUsers(){
     users[i].pointsScored = connections[i].pointsScored;
     users[i].isDrawing = connections[i].isDrawing;
     users[i].countID = connections[i].countID;
-  }
-  io.sockets.emit("updateUsers", users);
+  };
+  var encryptedUsers = CryptoJS.AES.encrypt(JSON.stringify(users),symCryptoPwd);
+  io.sockets.emit("updateUsers", encryptedUsers.toString());
 }
 
 
@@ -197,6 +221,9 @@ function setGameActions(socket){
 
   //guess recieved from player
   socket.on('sendGuess', function(data, callback){
+    //Decode data
+    data = CryptoJS.AES.decrypt(data, symCryptoPwd).toString(CryptoJS.enc.Utf8);
+
     //If the msg isn't from the drawer and the guesser hasn't guessed the  word yet
     if(!socket.isDrawing && !socket.hasGuessedThisRound && !wordIsBeingPicked){
       //IF guess is correct
@@ -212,8 +239,10 @@ function setGameActions(socket){
         socket.hasGuessedThisRound = true; //Mark that the player has already guessed correctly this turn
         callback(false, true);
 
-        //Alert other player of a new guess
-        io.sockets.emit('newGuess', {msg: "Ugotovil sem!", username: socket.username, isDrawing: socket.isDrawing});
+        //Alert other players of a new guess
+        var newGuessData = {msg: "Ugotovil sem!", username: socket.username, isDrawing: socket.isDrawing};
+        var cipheredNewGuessData = CryptoJS.AES.encrypt(JSON.stringify(newGuessData),symCryptoPwd);
+        io.sockets.emit('newGuess', cipheredNewGuessData.toString());
         io.sockets.emit('correctGuess', socket.username);
 
         //Update users since points updated
@@ -226,18 +255,28 @@ function setGameActions(socket){
       }
       //If word is close
       else if((word.toUpperCase().indexOf(data.toUpperCase())>=0 && (data.length >= (word.length/2)))|| data.toUpperCase().indexOf(word.toUpperCase())>=0){
+        //Alert other player of a new guess
+        var newGuessData = {msg: data, username: socket.username, isDrawing: socket.isDrawing};
+        var cipheredNewGuessData = CryptoJS.AES.encrypt(JSON.stringify(newGuessData), symCryptoPwd);
+        io.sockets.emit('newGuess', cipheredNewGuessData.toString());
+
         callback(true, false);
-        io.sockets.emit('newGuess', {msg: data, username: socket.username, isDrawing: socket.isDrawing});
       }
       //If guess is off
       else {
-        io.sockets.emit('newGuess', {msg: data, username: socket.username, isDrawing: socket.isDrawing});
+        //Alert other players of a new guess
+        var newGuessData = {msg: data, username: socket.username, isDrawing: socket.isDrawing};
+        var cipheredNewGuessData = CryptoJS.AES.encrypt(JSON.stringify(newGuessData), symCryptoPwd);
+        io.sockets.emit('newGuess', cipheredNewGuessData.toString());
+
         callback(false, false);
       }
     }
     //If msg is from some1 who is drawing or already guessed Only emit it if it isn't the guessing word
     else if(data.toUpperCase() != word.toUpperCase()){
-      io.sockets.emit('newGuess', {msg: data, username: socket.username, isDrawing: socket.isDrawing});
+      var newGuessData = {msg: data, username: socket.username, isDrawing: socket.isDrawing};
+      var cipheredNewGuessData = CryptoJS.AES.encrypt(JSON.stringify(newGuessData), symCryptoPwd);
+      io.sockets.emit('newGuess', cipheredNewGuessData.toString());
     }
   });
 
@@ -324,11 +363,29 @@ function setGameActions(socket){
   endOfRound = function(){
     //Give out the word that was being guessed
     io.sockets.emit("theWordWas", word);
+
     //Clear round timers
     clearTimeout(roundTime);
     clearTimeout(displayTime);
+
     //Increment the index that indicated the drawing player
     drawerIndex++;
+
+    //Give score to the drawing player
+    for(var i=0; i<connections.length; i++){
+      if(connections[i].isDrawing){
+        if(connections.length > 3){
+          connections[i].pointsScored += Math.round(pointsGiven*0.38*numberOfHits);
+        }
+        else if(connections.length == 2){
+          connections[i].pointsScored += Math.round(pointsGiven*numberOfHits);
+        }
+        else {
+          connections[i].pointsScored += Math.round(pointsGiven*0.50*numberOfHits);
+        }
+      }
+    }
+    updateUsers();
     //If new drawrIndex is out of bounds
     if(drawerIndex >= connections.length){
       //And current round was the final round
@@ -348,8 +405,9 @@ function setGameActions(socket){
           users[i].isDrawing = connections[i].isDrawing;
           users[i].countID = connections[i].countID;
         }
-        users.sort(function (a, b) { return b.pointsScored - a.pointsScored})
-        io.sockets.emit("gameEnded", users);
+        users.sort(function (a, b) { return b.pointsScored - a.pointsScored});
+        var encryptedUsers = CryptoJS.AES.encrypt(JSON.stringify(users),symCryptoPwd);
+        io.sockets.emit("gameEnded", encryptedUsers.toString());
       }
       else{
         //This was not the final round
@@ -358,22 +416,7 @@ function setGameActions(socket){
         drawerIndex = 0;
         currentRound++;
       }
-    }
-
-    //Give score to the drawing player
-    for(var i=0; i<connections.length; i++){
-      if(connections[i].isDrawing)
-      if(connections.length > 3){
-        connections[i].pointsScored += Math.round(pointsGiven*0.38*numberOfHits);
-      }
-      else if(connections.length == 2){
-        connections[i].pointsScored += Math.round(pointsGiven*numberOfHits);
-      }
-      else {
-        connections[i].pointsScored += Math.round(pointsGiven*0.50*numberOfHits);
-      }
-      updateUsers();
-    }
+  }
     //Set number of hits to 0 for the next round
     numberOfHits = 0;
     //Start new timeout for the next round

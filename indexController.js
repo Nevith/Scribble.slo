@@ -2,15 +2,20 @@ var socket = null
 var infoBoxTimeout = null;
 var isDrawingCur = false;
 
+
 function logIn(){
 	//Get palyer name
 	$("#yourNameContainer").html("Ime: "+ $("#nameInput").val());
 
 	//Connect to server
 	socket = io.connect();
+	socket.key="dghzuit50gf";
+	socket.on("disconnect", function(){
+		location.reload();
+	});
 
 	//IF connected alert server of new user. Callback function tells server what to do if name is or isn't taken
-	socket.emit("newUser", $("#nameInput").val(), function(isNameNotTaken){
+	socket.emit("newUser", CryptoJS.AES.encrypt($("#nameInput").val(), socket.key).toString(), function(isNameNotTaken){
 		if(isNameNotTaken){
 			$("#logInDiv").hide();
 
@@ -40,7 +45,6 @@ function logIn(){
 						$("#adminForm").hide();
 					}
 					}
-
 				});
 			});
 		}
@@ -57,6 +61,11 @@ function logIn(){
 		socket.on("displayTimer", function(data){
 			$("#timerContainer").html("Preostali čas: "+data);
 		});
+
+
+		socket.on("RecvAdminPrivilage", function(){
+			$("#adminForm").show();
+		})
 
 
 		socket.on("correctGuess", function(data){
@@ -82,10 +91,17 @@ function logIn(){
 
 
 		socket.on("gameEnded", function(data){
+			//Decrypt data
+			data = CryptoJS.AES.decrypt(data, socket.key);
+			data = JSON.parse(data.toString(CryptoJS.enc.Utf8));
+
 			$(document.body).load("ScribbleGame/EndScreen/endScreen.html", function(){
 				for(var i = 0; i<data.length; i++){
 					$("#endScreenDiv").append("<p>"+(i-(-1))+". "+data[i].username+": "+data[i].pointsScored+"</p>")
-				}
+				};
+				$("#endScreen_EndGameButton").click(function(){
+					location.reload();
+				});
 			});
 		})
 
@@ -155,8 +171,10 @@ function gameStart(){
 						$("#WordPicker").show();
 						$("#WordPicker").html("");
 						for(var i = 0; i<data.length; i++){
-							var appendingHTML = '<input type="radio"  name="wordPick" value="'+data[i]+'"> '+data[i].toUpperCase()+' <br>'
-							$("#WordPicker").append(appendingHTML);
+							if(data[i]){
+								var appendingHTML = '<input type="radio"  name="wordPick" value="'+data[i]+'"> '+data[i].toUpperCase()+' <br>'
+								$("#WordPicker").append(appendingHTML);
+							}
 						}
 						$("#WordPicker").append("<br><button onclick='wordChosen()' class='btn btn-primary'>Izberi</button>")
 					})

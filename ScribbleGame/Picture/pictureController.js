@@ -4,6 +4,7 @@ function picture_pictureLoad(webSocketInstance){
   socket = webSocketInstance;
 
   socket.on("getCanvasPicture", function(data){
-    $("#pictureCanvasImage").prop("src", data);
+    data = (CryptoJS.AES.decrypt(data, socket.key));
+    $("#pictureCanvasImage").prop("src", data.toString(CryptoJS.enc.Utf8));
   });
 }

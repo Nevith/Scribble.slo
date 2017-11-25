@@ -7,6 +7,9 @@ function chat_guessChatLoad(webSocketInstance){
   var chat = $("#chat");
 
   socket.on("updateUsers", function(data){
+    //Decode data
+    data = JSON.parse(CryptoJS.AES.decrypt(data, socket.key).toString(CryptoJS.enc.Utf8));
+
     var orderedListHTML = "";
     var colorString = "";
     //Fill in users
@@ -37,20 +40,21 @@ function chat_guessChatLoad(webSocketInstance){
     e.preventDefault();
     //Get the value of user msg
     var newGuess = userGuess.val();
+    var cipheredText = CryptoJS.AES.encrypt(newGuess, socket.key);
 
     if(newGuess.length >= 1){
       //Send new guess with a callback function that appends it to the list of guesses correctly
-      socket.emit("sendGuess", newGuess, function(isClose, isTrue){
+      socket.emit("sendGuess", cipheredText.toString(), function(isClose, isTrue){
           if(isClose){
-            $("#picturePlayerGuesses").append("<p style='color:white; font-size:120%'>"+newGuess.toUpperCase()+"</p>")
+            $("#picturePlayerGuesses").append("<p style='color:white; font-size:120%'>"+CryptoJS.AES.decrypt(cipheredText, socket.key).toString(CryptoJS.enc.Utf8).toUpperCase()+"</p>")
             document.getElementById("picturePlayerGuesses").scrollTop = document.getElementById("picturePlayerGuesses").scrollHeight;
           }
           else if(isTrue){
-            $("#picturePlayerGuesses").append("<p style='color:blue; font-size:120%'>"+newGuess.toUpperCase()+"</p>")
+            $("#picturePlayerGuesses").append("<p style='color:blue; font-size:120%'>"+CryptoJS.AES.decrypt(cipheredText, socket.key).toString(CryptoJS.enc.Utf8).toUpperCase()+"</p>")
             document.getElementById("picturePlayerGuesses").scrollTop = document.getElementById("picturePlayerGuesses").scrollHeight;
           }
           else{
-            $("#picturePlayerGuesses").append("<p>"+newGuess.toUpperCase()+"</p>");
+            $("#picturePlayerGuesses").append("<p>"+CryptoJS.AES.decrypt(cipheredText, socket.key).toString(CryptoJS.enc.Utf8).toUpperCase()+"</p>");
             document.getElementById("picturePlayerGuesses").scrollTop = document.getElementById("picturePlayerGuesses").scrollHeight;
           }
       });
@@ -61,6 +65,9 @@ function chat_guessChatLoad(webSocketInstance){
 
   //When a new guess comes in
   socket.on('newGuess', function(data){
+    //Decode data
+    data = CryptoJS.AES.decrypt(data, socket.key).toString(CryptoJS.enc.Utf8);
+    data = JSON.parse(data);
     //Get username
     var username = data.username;
     //Shorten if to long

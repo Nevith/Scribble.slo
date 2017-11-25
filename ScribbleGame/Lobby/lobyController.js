@@ -4,6 +4,11 @@ function lobby_lobbyLoad(webSocketInstance){
   socket = webSocketInstance;
 
   socket.on("updateUsers", function(data){
+    //Decrypt data
+    data = CryptoJS.AES.decrypt(data, socket.key);
+    data = JSON.parse(data.toString(CryptoJS.enc.Utf8));
+
+
     var orderedListHTML = '';
     //Fill in users
     for(var i=0; i<data.length; i++){

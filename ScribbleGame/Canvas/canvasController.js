@@ -19,9 +19,9 @@ function canvas_canvasLoad(webSocketInstance){
 
 	//Basic set-up for drawing
 	//We also save the initial coordinates
-	canv.onmousedown=function(m){mousedown=true; scnX=m.clientX -$("#canv").offset().left; scnY=m.clientY -$("#canv").offset().top; /*paintBucketPaint(drawing=="paintBuckedTool");*/ socket.emit("updateCanvasPicture", document.getElementById("canv").toDataURL());}
+	canv.onmousedown=function(m){mousedown=true; scnX=m.clientX -$("#canv").offset().left; scnY=m.clientY -$("#canv").offset().top; /*paintBucketPaint(drawing=="paintBuckedTool");*/ socket.emit("updateCanvasPicture",  CryptoJS.AES.encrypt(document.getElementById("canv").toDataURL(), socket.key).toString());}
 	canv.onmousemove=draw;
-	canv.onmouseup=function(m){mousedown=false; isDrawingShape=true; socket.emit("updateCanvasPicture", document.getElementById("canv").toDataURL());}
+	canv.onmouseup=function(m){mousedown=false; isDrawingShape=true; socket.emit("updateCanvasPicture",  CryptoJS.AES.encrypt(document.getElementById("canv").toDataURL(), socket.key).toString());}
 	$("#clearButton").click(canvas_clearCanvas);
 
 	//Brush is not selected by default
@@ -127,7 +127,7 @@ function draw(m){
 function canvas_brushSelected(){
 	drawing = "brush"
 	//Update current canvas picture
-	socket.emit("updateCanvasPicture", document.getElementById("canv").toDataURL());
+	socket.emit("updateCanvasPicture",  CryptoJS.AES.encrypt(document.getElementById("canv").toDataURL(), socket.key).toString());
 
 	$("#size").prop("disabled",true);
 	$("#color_fill").prop("disabled",true);
@@ -148,7 +148,7 @@ function canvas_brushDeselected(e){
 			}
 	}
 	//Update current canvas picture
-	socket.emit("updateCanvasPicture", document.getElementById("canv").toDataURL());
+	socket.emit("updateCanvasPicture",  CryptoJS.AES.encrypt(document.getElementById("canv").toDataURL(), socket.key).toString());
 
 	$("#size").prop("disabled",false);
 	$("#size").css("opacity","1");
@@ -168,7 +168,7 @@ function canvas_clearCanvas(){
 	var ctx=canv.getContext("2d");
 	ctx.clearRect(0, 0, canv.width, canv.height);
 	ctx.beginPath();
-	socket.emit("updateCanvasPicture", document.getElementById("canv").toDataURL());
+	socket.emit("updateCanvasPicture",  CryptoJS.AES.encrypt(document.getElementById("canv").toDataURL(), socket.key).toString());
 }
 
 //Adds the passed in canvas contex to the img and emits the data if desired
@@ -177,7 +177,7 @@ function canvas_finishDrawing(ctx, brushWidth, UpdateCanvasPicture){
 	ctx.stroke();
 	ctx.fill();
 	if(UpdateCanvasPicture)
-		socket.emit("updateCanvasPicture", document.getElementById("canv").toDataURL());
+		socket.emit("updateCanvasPicture",  CryptoJS.AES.encrypt(document.getElementById("canv").toDataURL(), socket.key).toString());
 }
 
 
