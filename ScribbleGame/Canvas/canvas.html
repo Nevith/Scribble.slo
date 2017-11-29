@@ -50,32 +50,32 @@
   <div class="col-md-1" style="max-width:250px;">
 	<div id="options" class="panel panel-default">
 		<div id="color_div">
-			<input type="color"   id="color_fill" class="color"> Fill color
+			<input type="color"   id="color_fill" class="color"> Barva polnila
 			<br>
-			<input type="color" id="color_stroke" class="color"> Stroke color
+			<input type="color" id="color_stroke" class="color"> Barva črte
 		</div>
 		<div id="choose">
-			Drawing Tool:<br>
-			<input type="radio"  name="drawing" value="brush" onclick="canvas_brushSelected()"> Brush <br>
-			<input type="radio"  name="drawing" value="rectangle" onclick="canvas_brushDeselected()"> Rectangle <br>
-			<input type="radio"  name="drawing" value="square" onclick="canvas_brushDeselected()"> Square <br>
-			<input type="radio" name="drawing" value="circle" onclick="canvas_brushDeselected()"> Circle <br>
+			Orodja:<br>
+			<input type="radio"  name="drawing" value="brush" onclick="canvas_brushSelected()"> Čopič <br>
+			<input type="radio"  name="drawing" value="rectangle" onclick="canvas_brushDeselected()"> Pravokotnik <br>
+			<input type="radio"  name="drawing" value="square" onclick="canvas_brushDeselected()"> Kvadrat <br>
+			<input type="radio" name="drawing" value="circle" onclick="canvas_brushDeselected()"> Krog <br>
       <!--<input type="radio" name="drawing" value="paintBuckedTool" onclick="canvas_brushDeselected()"> Fill <br>-->
-			<input type="radio" name="drawing" value="line" onclick="canvas_brushDeselected()" checked> Line <br>
+			<input type="radio" name="drawing" value="line" onclick="canvas_brushDeselected()" checked> Črta <br>
 		</div>
 		<div id="options_advanced">
-		Stroke size:
-		<input type="number" min="1" max="50" id="size" class="input" value="1"><br>
+		Debelina črte:
+		<input type="number" min="0" max="50" id="size" class="input" value="1"><br>
 		<button id="clearButton" style="margin-top:5px" class="btn btn-primary">Clear</button>
 		</div>
 		<div id="Extra">
-			Brush shape:<br>
-			<input type="radio" name="brush" value="norm" checked> Normal <br>
-			<input type="radio" name="brush" value="rec"> Rectangle <br>
-			<input type="radio" name="brush" value="sqr"> Square <br>
-			<input type="radio" name="brush" value="cir"> Circle <br>
-			Brush Size: <br>
-			<input type="number" min="1" max="50" id="size2" class="input" value="1">
+			Oblika čopiča:<br>
+			<input type="radio" name="brush" value="norm" checked> Navadna <br>
+			<input type="radio" name="brush" value="rec"> Pravokotna <br>
+			<input type="radio" name="brush" value="sqr"> Kvadratna <br>
+			<input type="radio" name="brush" value="cir"> Okrogla <br>
+			Velikost čopiča: <br>
+			<input type="number" min="2" max="50" id="size2" class="input" value="2">
 		</div>
 	</div>
   </div>

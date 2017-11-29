@@ -407,7 +407,7 @@ function setGameActions(socket){
         }
         users.sort(function (a, b) { return b.pointsScored - a.pointsScored});
         var encryptedUsers = CryptoJS.AES.encrypt(JSON.stringify(users),symCryptoPwd);
-        setTimeout(function(){io.sockets.emit("gameEnded", encryptedUsers.toString());}, 5000);
+        io.sockets.emit("gameEnded", encryptedUsers.toString());
       }
       else{
         //This was not the final round

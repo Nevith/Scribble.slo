@@ -5,6 +5,9 @@ var mousedown=false;
 var socket = null;
 var drawing = null;
 var colorLayer;
+var canvasOffset;
+var canvasWidth = 600;
+var canvasHeight = 600;
 
 
 //Initialize canvas basic funcionality
@@ -12,16 +15,19 @@ function canvas_canvasLoad(webSocketInstance){
 	socket = webSocketInstance;
 
 	var canv=document.getElementById("canv");
-	canv.width = 600;
-	canv.height = 600;
-	canv.style.width = "600px";
-	canv.style.height = "600px";
+	canv.width = canvasWidth;
+	canv.height = canvasHeight;
+	canv.style.width = canvasWidth+"px";
+	canv.style.height = canvasHeight+"px";
+	canvasOffset = $("#canv").offset();
+	console.log(canvasOffset);
 
 	//Basic set-up for drawing
 	//We also save the initial coordinates
-	canv.onmousedown=function(m){mousedown=true; scnX=m.clientX -$("#canv").offset().left; scnY=m.clientY -$("#canv").offset().top; /*paintBucketPaint(drawing=="paintBuckedTool");*/ socket.emit("updateCanvasPicture",  CryptoJS.AES.encrypt(document.getElementById("canv").toDataURL(), socket.key).toString());}
-	canv.onmousemove=draw;
-	canv.onmouseup=function(m){mousedown=false; isDrawingShape=true; socket.emit("updateCanvasPicture",  CryptoJS.AES.encrypt(document.getElementById("canv").toDataURL(), socket.key).toString());}
+	canv.onmousedown = function(m){mousedown=true; scnX=m.clientX -canvasOffset.left; scnY=m.clientY -canvasOffset.top; /*paintBucketPaint(drawing=="paintBuckedTool")*/; socket.emit("updateCanvasPicture",  CryptoJS.AES.encrypt(document.getElementById("canv").toDataURL(), socket.key).toString());};
+	canv.onmousemove = draw;
+	canv.onmouseup = function(m){mousedown=false; isDrawingShape=true; socket.emit("updateCanvasPicture",  CryptoJS.AES.encrypt(document.getElementById("canv").toDataURL(), socket.key).toString());};
+	canv.onmouseleave = function(m){mousedown=false; socket.emit("updateCanvasPicture",  CryptoJS.AES.encrypt(document.getElementById("canv").toDataURL(), socket.key).toString());};
 	$("#clearButton").click(canvas_clearCanvas);
 
 	//Brush is not selected by default
@@ -179,82 +185,122 @@ function canvas_finishDrawing(ctx, brushWidth, UpdateCanvasPicture){
 	if(UpdateCanvasPicture)
 		socket.emit("updateCanvasPicture",  CryptoJS.AES.encrypt(document.getElementById("canv").toDataURL(), socket.key).toString());
 }
-
-
-/* Trying to write an algorithm to have a paint bucket tool
+/*
+var maxColorLayerIndex;
+// Trying to write an algorithm to have a paint bucket tool
 function paintBucketPaint(doWeFill){
-	console.log(doWeFill);
-	if(!doWeFill) {return};
-	var canvas = document.getElementById("canv");
-	var pixelStack = [];
-	var firstPixelData = null;
+	if(!doWeFill)
+		return;
+
+	var canv=document.getElementById("canv");
 	var ctx=canv.getContext("2d");
-	var imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-	pixelStack.push([scnX,scnY]);
-	canvasWidth = canvas.width;
-	canvasHeight = canvas.height;
-	firstPixelData = ctx.getImageData(scnX,scnY,1,1);
 
-	while(pixelStack.length){
-		var newPos, x, y, pixelPos, reachLeft, reachRight;
-		newPos = pixelStack.pop();
-		var x = newPos[0];
-		var y = newPos[1];
+	var chosenPixelData = ctx.getImageData(scnY, scnX, 1, 1);
 
-		pixelPos = (y*canvasWidth + x) * 4;
-		while(y-- >= 0 && matchStartColor(pixelPos, firstPixelData, imgData))
-			{
-				pixelPos -= canvasWidth * 4;
-			}
-		pixelPos += canvasWidth * 4;
-  	++y;
-  	reachLeft = false;
-  	reachRight = false;
-		while(y++ < canvasHeight-1 && matchStartColor(pixelPos, firstPixelData, imgData)){
-    	colorPixel(pixelPos,firstPixelData, imgData);
-    	if(x > 0){
-      	if(matchStartColor(pixelPos - 4, firstPixelData, imgData)){
-        	if(!reachLeft){
-          	pixelStack.push([x - 1, y]);
-          	reachLeft = true;
-        		}
-      		}
-      	else if(reachLeft){
-        	reachLeft = false;
-      	}
-    	}
-    	if(x < canvasWidth-1){
-      	if(matchStartColor(pixelPos + 4, firstPixelData, imgData)){
-        	if(!reachRight){
-          	pixelStack.push([x + 1, y]);
-          	reachRight = true;
-        	}
-      	}
-      	else if(reachRight){
-        	reachRight = false;
-      	}
-    	}
-    	pixelPos += canvasWidth * 4;
-  	}
+
+	var startR = chosenPixelData[0];
+	var startG = chosenPixelData[1];
+	var startB = chosenPixelData[2];
+
+
+
+
+	colorLayer = ctx.getImageData(0,0, canvasHeight, canvasWidth);
+	console.log(colorLayer.data);
+	console.log(chosenPixelData.data);
+
+	var newPos,
+					x,
+					y,
+					pixelPos,
+					reachLeft,
+					reachRight,
+					drawingBoundLeft = 0,
+					drawingBoundTop = 0,
+					drawingBoundRight = canv.width - 1,
+					drawingBoundBottom = canv.height - 1,
+					pixelStack = [[scnX, scnY]];
+
+				while (pixelStack.length) {
+
+					newPos = pixelStack.pop();
+					x = newPos[0];
+					y = newPos[1];
+
+					// Get current pixel position
+					pixelPos = (y * canvasWidth + x) * 4;
+					colorLayer.data[pixelPos] = 255;
+					colorLayer.data[pixelPos+1] = 0;
+					colorLayer.data[pixelPos+2] = 0;
+					colorLayer.data[pixelPos+3] = 125;
+
+					// Go up as long as the color matches and are inside the canvas
+					while (y >= drawingBoundTop && matchStartColor(pixelPos, startR, startG, startB)) {
+						y -= 1;
+						pixelPos -= canvasWidth * 4;
+					}
+
+					pixelPos += canvasWidth * 4;
+					y += 1;
+					reachLeft = false;
+					reachRight = false;
+
+					// Go down as long as the color matches and in inside the canvas
+					while (y <= drawingBoundBottom && matchStartColor(pixelPos, startR, startG, startB)) {
+						y += 1;
+
+						if(pixelPos > 0 && (pixelPos+3)<colorLayer.data.length){
+							colorLayer.data[pixelPos] = 0;
+							colorLayer.data[pixelPos+1] = 0;
+							colorLayer.data[pixelPos+2] = 0;
+							colorLayer.data[pixelPos+3] = 255;
+						}
+
+						if (x > drawingBoundLeft) {
+							if (matchStartColor(pixelPos - 4, startR, startG, startB)) {
+								if (!reachLeft) {
+									// Add pixel to stack
+									pixelStack.push([x - 1, y]);
+									reachLeft = true;
+								}
+							} else if (reachLeft) {
+								reachLeft = false;
+							}
+						}
+
+						if (x < drawingBoundRight) {
+							if (matchStartColor(pixelPos + 4, startR, startG, startB)) {
+								if (!reachRight) {
+									// Add pixel to stack
+									pixelStack.push([x + 1, y]);
+									reachRight = true;
+								}
+							} else if (reachRight) {
+								reachRight = false;
+							}
+						}
+
+						pixelPos += canvasWidth * 4;
+					}
 	}
-	ctx.putImageData(imgData, 0, 0);
+	console.log("end");
+	ctx.putImageData(colorLayer, 0, 0);
 	}
 
-function matchStartColor(pixelPos, originalPixel, imgData){
-	console.log(pixelPos);
-  var r = imgData.data[pixelPos];
-  var g = imgData.data[pixelPos+1];
-  var b = imgData.data[pixelPos+2];
-	console.log("r: "+ r +"g: "+g+"b"+b);
-  return (r == originalPixel.data[0] && g == originalPixel.data[1] && b == originalPixel.data[2]);
-}
+	function matchStartColor(pixelPos, startR, startG, startB)
+	{
+	  var r = colorLayer.data[pixelPos];
+	  var g = colorLayer.data[pixelPos+1];
+	  var b = colorLayer.data[pixelPos+2];
 
-function colorPixel(pixelPos,originalPixel, imgData){
-	var color = document.getElementById("color_fill").value;
-	console.log(color);
-  imgData.data[0] = originalPixel.data[0];
-  imgData.data[1] = originalPixel.data[1];
-  imgData.data[2] = originalPixel.data[2];
-  imgData.data[3] = 255;
-}
-*/
+	  return (r == startR && g == startG && b == startB);
+	}
+
+	function colorPixel(pixelPos, startR, startG, startB)
+	{
+	  colorLayer.data[pixelPos] = 255;
+	  colorLayer.data[pixelPos+1] = 50;
+	  colorLayer.data[pixelPos+2] = 40;
+	  colorLayer.data[pixelPos+3] = 255;
+	}
+/**/

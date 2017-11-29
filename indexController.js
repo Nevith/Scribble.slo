@@ -94,15 +94,16 @@ function logIn(){
 			//Decrypt data
 			data = CryptoJS.AES.decrypt(data, socket.key);
 			data = JSON.parse(data.toString(CryptoJS.enc.Utf8));
-
-			$(document.body).load("ScribbleGame/EndScreen/endScreen.html", function(){
-				for(var i = 0; i<data.length; i++){
-					$("#endScreenDiv").append("<p>"+(i-(-1))+". "+data[i].username+": "+data[i].pointsScored+"</p>")
-				};
-				$("#endScreen_EndGameButton").click(function(){
-					location.reload();
+			setTimeout(function(){
+				$(document.body).load("ScribbleGame/EndScreen/endScreen.html", function(){
+					for(var i = 0; i<data.length; i++){
+						$("#endScreenDiv").append("<p>"+(i-(-1))+". "+data[i].username+": "+data[i].pointsScored+"</p>")
+					};
+					$("#endScreen_EndGameButton").click(function(){
+						location.reload();
+					});
 				});
-			});
+			}, 5000);
 		})
 
 
