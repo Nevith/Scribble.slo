@@ -105,6 +105,7 @@ io.sockets.on('connection', function(socket){
     }
     //If there are still users and current one was daring
     else if(socket.isDrawing){
+      --drawerIndex;
       //End round
       endOfRound();
     }
@@ -391,8 +392,6 @@ function setGameActions(socket){
       //And current round was the final round
       if(currentRound>=numberOfRounds){
         //Game Ends
-        clearTimeout(roundTime);
-        clearTimeout(displayTime);
         gameIsRunning = false;
         wordIsBeingPicked = false;
 
@@ -408,6 +407,7 @@ function setGameActions(socket){
         users.sort(function (a, b) { return b.pointsScored - a.pointsScored});
         var encryptedUsers = CryptoJS.AES.encrypt(JSON.stringify(users),symCryptoPwd);
         io.sockets.emit("gameEnded", encryptedUsers.toString());
+        return;
       }
       else{
         //This was not the final round

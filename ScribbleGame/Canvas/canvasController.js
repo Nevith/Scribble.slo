@@ -41,6 +41,8 @@ function draw(m){
 		var x=m.clientX -$("#canv").offset().left;
 		var y=m.clientY -$("#canv").offset().top;
 		var fat=document.getElementById("size").value;
+		if(fat < 0 || fat > 1000)
+			return;
 		//Defining the canvas
 		var canv=document.getElementById("canv");
 		var ctx=canv.getContext("2d");
@@ -63,6 +65,8 @@ function draw(m){
 			}
 		//Getting the desired sizeOfBrush
 		var big=document.getElementById("size2").value;
+		if(big < 2 || big > 1000)
+			return;
 		//Starting
 		ctx.beginPath();
 			//Normal Brush
@@ -185,6 +189,9 @@ function canvas_finishDrawing(ctx, brushWidth, UpdateCanvasPicture){
 	if(UpdateCanvasPicture)
 		socket.emit("updateCanvasPicture",  CryptoJS.AES.encrypt(document.getElementById("canv").toDataURL(), socket.key).toString());
 }
+
+
+
 /*
 var maxColorLayerIndex;
 // Trying to write an algorithm to have a paint bucket tool
